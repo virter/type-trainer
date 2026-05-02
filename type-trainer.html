@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Trainer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .line {
+      font-size: 36px;
+      letter-spacing: 6px;
+      margin: 10px 0;
+    }
+
+    .done {
+      color: #aaa;
+    }
+
+    .current {
+      border-bottom: 3px solid black;
+      color: black;
+    }
+
+    .pending {
+      color: #222;
+    }
+
+    #info {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Typing Trainer</h1>
+
+<div id="lines"></div>
+<div id="info"></div>
+
+<script>
+  const mainDigits = ['2','3','4','5'];
+  const extraDigits = ['1', '6','7','8','9','0'];
+
+  function getDigit() {
+    return Math.random() < 0.85
+      ? mainDigits[Math.floor(Math.random()*mainDigits.length)]
+      : extraDigits[Math.floor(Math.random()*extraDigits.length)];
+  }
+
+  function generateNumber() {
+    const len = Math.floor(Math.random() * 6) + 5; // 5–10
+    let s = '';
+    for (let i = 0; i < len; i++) s += getDigit();
+    return s;
+  }
+
+  let target = '';
+  let row = 0;
+  let index = 0;
+
+  const linesEl = document.getElementById('lines');
+  const infoEl = document.getElementById('info');
+
+  function render() {
+    let html = '';
+
+    for (let r = 0; r < 3; r++) {
+      let line = '';
+
+      for (let i = 0; i < target.length; i++) {
+        let cls = '';
+
+        if (r < row) {
+          cls = 'done';
+        } else if (r === row) {
+          if (i < index) cls = 'done';
+          else if (i === index) cls = 'current';
+          else cls = 'pending';
+        } else {
+          cls = 'pending';
+        }
+
+        line += `<span class="${cls}">${target[i]}</span>`;
+      }
+
+      html += `<div class="line">${line}</div>`;
+    }
+
+    linesEl.innerHTML = html;
+    infoEl.textContent = `Row: ${row + 1} / 3`;
+  }
+
+  function reset() {
+    target = generateNumber();
+    row = 0;
+    index = 0;
+    render();
+  }
+
+  function fail() {
+    row = 0;
+    index = 0;
+    render();
+  }
+
+  function success() {
+    reset();
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (!/^[0-9]$/.test(e.key)) return;
+
+    const expected = target[index];
+
+    if (e.key !== expected) {
+      fail();
+      return;
+    }
+
+    index++;
+
+    if (index >= target.length) {
+      row++;
+      index = 0;
+
+      if (row >= 3) {
+        success();
+        return;
+      }
+    }
+
+    render();
+  });
+
+  reset();
+</script>
+
+</body>
+</html>
